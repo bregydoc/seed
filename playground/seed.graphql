@@ -1,0 +1,16 @@
+type User {
+  id: ID! @id
+  name: String!
+  posts: [Post!]!
+}
+
+type Post {
+  id: ID! @id
+  title: String!
+  content: String
+  creator: User!
+}
+
+type Query {
+  profile(token: String!): User!
+}

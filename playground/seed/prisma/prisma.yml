@@ -1,0 +1,6 @@
+endpoint: https://us1.prisma.sh/bregy-malpartida-2d1dcf/xxx/dev
+datamodel:
+- prisma.graphql
+generate:
+- generator: go-client
+  output: ./client

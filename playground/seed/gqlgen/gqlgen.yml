@@ -1,0 +1,15 @@
+schema:
+- gqlgen.graphql
+- literals.graphql
+exec:
+  filename: generated.go
+model:
+  filename: models_gen.go
+resolver:
+  filename: resolver-temp.go
+  type: Resolver
+models:
+  Post:
+    model: github.com/playground/seed/client.Post
+  User:
+    model: github.com/playground/seed/client.User

@@ -1,0 +1,4 @@
+type Query {
+  profile(token: String!): User!
+}
+
