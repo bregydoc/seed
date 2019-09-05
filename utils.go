@@ -7,8 +7,8 @@ import (
 	"path"
 )
 
-func goModExists(workDir string) bool {
-	_, err := os.Open(path.Join(workDir, goModFilename))
+func goModExists(project *Project) bool {
+	_, err := os.Open(path.Join(project.AbsoluteWorkDir, goModFilename))
 	if os.IsExist(err) {
 		return true
 	}
@@ -16,8 +16,8 @@ func goModExists(workDir string) bool {
 	return false
 }
 
-func createGoModFile(workDir string, projectName string) error {
-	filename := path.Join(workDir, goModFilename)
-	body := fmt.Sprintf("module %s\n", projectName)
+func createGoModFile(project *Project) error {
+	filename := path.Join(project.AbsoluteWorkDir, goModFilename)
+	body := fmt.Sprintf("module %s\n", project.Name)
 	return ioutil.WriteFile(filename, []byte(body), 0644)
 }

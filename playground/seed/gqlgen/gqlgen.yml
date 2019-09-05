@@ -9,7 +9,87 @@ resolver:
   filename: resolver-temp.go
   type: Resolver
 models:
-  Post:
-    model: github.com/playground/seed/client.Post
-  User:
-    model: github.com/playground/seed/client.User
+  ActionTicket:
+    model: github.com/playground/seed/client.ActionTicket
+  ActionTicketType:
+    model: github.com/playground/seed/client.ActionTicketType
+  Attraction:
+    model: github.com/playground/seed/client.Attraction
+  Cost:
+    model: github.com/playground/seed/client.Cost
+  Credential:
+    model: github.com/playground/seed/client.Credential
+  CredentialType:
+    model: github.com/playground/seed/client.CredentialType
+  CreditCard:
+    model: github.com/playground/seed/client.CreditCard
+  CreditCardType:
+    model: github.com/playground/seed/client.CreditCardType
+  Currency:
+    model: github.com/playground/seed/client.Currency
+  EmailChannel:
+    model: github.com/playground/seed/client.EmailChannel
+  EntryTicket:
+    model: github.com/playground/seed/client.EntryTicket
+  Error:
+    model: github.com/playground/seed/client.Error
+  ExperienceType:
+    model: github.com/playground/seed/client.ExperienceType
+  Expert:
+    model: github.com/playground/seed/client.Expert
+  Faq:
+    model: github.com/playground/seed/client.Faq
+  FaqEntry:
+    model: github.com/playground/seed/client.FaqEntry
+  Feature:
+    model: github.com/playground/seed/client.Feature
+  IDDocument:
+    model: github.com/playground/seed/client.IDDocument
+  IDType:
+    model: github.com/playground/seed/client.IDType
+  Lima:
+    model: github.com/playground/seed/client.Lima
+  LimaContact:
+    model: github.com/playground/seed/client.LimaContact
+  Location:
+    model: github.com/playground/seed/client.Location
+  OpeningHours:
+    model: github.com/playground/seed/client.OpeningHours
+  Partner:
+    model: github.com/playground/seed/client.Partner
+  Pass:
+    model: github.com/playground/seed/client.Pass
+  PassState:
+    model: github.com/playground/seed/client.PassState
+  PassType:
+    model: github.com/playground/seed/client.PassType
+  PaymentMethod:
+    model: github.com/playground/seed/client.PaymentMethod
+  PaymentMethodType:
+    model: github.com/playground/seed/client.PaymentMethodType
+  Person:
+    model: github.com/playground/seed/client.Person
+  PersonReviews:
+    model: github.com/playground/seed/client.PersonReviews
+  PhoneChannel:
+    model: github.com/playground/seed/client.PhoneChannel
+  Place:
+    model: github.com/playground/seed/client.Place
+  ProductEntry:
+    model: github.com/playground/seed/client.ProductEntry
+  Purchase:
+    model: github.com/playground/seed/client.Purchase
+  Route:
+    model: github.com/playground/seed/client.Route
+  Story:
+    model: github.com/playground/seed/client.Story
+  StoryType:
+    model: github.com/playground/seed/client.StoryType
+  Text:
+    model: github.com/playground/seed/client.Text
+  Ticket:
+    model: github.com/playground/seed/client.Ticket
+  TicketState:
+    model: github.com/playground/seed/client.TicketState
+  Traveler:
+    model: github.com/playground/seed/client.Traveler

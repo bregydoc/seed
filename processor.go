@@ -6,11 +6,12 @@ import (
 
 	"log"
 
-	"encoding/json"
 	"os"
 
-	"github.com/99designs/gqlgen/api"
-	"github.com/99designs/gqlgen/codegen/config"
+	"os/exec"
+
+	"strings"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -26,15 +27,27 @@ type prismaProcessor struct {
 	Generate  []pGenerator `yaml:"generate"`
 }
 
-func (processor *prismaProcessor) writeConfig(workDir string) error {
+func (processor *prismaProcessor) writeConfig(project *Project) error {
 	data, err := yaml.Marshal(processor)
 	if err != nil {
 		return err
 	}
 
-	finalPath := path.Join(workDir, seedDir, prismaDir, prismaConfigFile)
+	finalPath := path.Join(project.AbsoluteWorkDir, seedDir, prismaDir, prismaConfigFile)
 
 	return ioutil.WriteFile(finalPath, data, 0644)
+}
+
+func (processor *prismaProcessor) generate(project *Project) error {
+	if err := os.Chdir(path.Join(project.AbsoluteWorkDir, seedDir, prismaDir)); err != nil {
+		return err
+	}
+
+	if _, err := exec.Command("prisma", "generate").Output(); err != nil {
+		return err
+	}
+
+	return os.Chdir(project.AbsoluteWorkDir)
 }
 
 type gqlGenField struct {
@@ -54,7 +67,7 @@ type gqlGenProcessor struct {
 	Models   map[string]gqlGenModel `yaml:"models"`
 }
 
-func (processor *gqlGenProcessor) processAndWrite(workDir string, projectName string, types []GQLType) error {
+func (processor *gqlGenProcessor) processAndWrite(project *Project, types []GQLType) error {
 	reconstructed := ""
 	for _, t := range types {
 		tx, err := fixGQLTypeDeclarationToGQLGen(t)
@@ -64,17 +77,17 @@ func (processor *gqlGenProcessor) processAndWrite(workDir string, projectName st
 		reconstructed += tx.Body + "\n"
 	}
 
-	g := path.Join(workDir, seedDir, gqlDir, gqlLiteralsGenFile)
+	g := path.Join(project.AbsoluteWorkDir, seedDir, gqlDir, gqlLiteralsGenFile)
 
 	err := ioutil.WriteFile(g, []byte(reconstructed), 0644)
 	if err != nil {
 		return err
 	}
 
-	finalPath := path.Join(workDir, seedDir, gqlDir, gqlConfigFile)
+	finalPath := path.Join(project.AbsoluteWorkDir, seedDir, gqlDir, gqlConfigFile)
 	for _, t := range types {
 		processor.Models[t.Name] = gqlGenModel{
-			Model: path.Join(projectName, "seed", "client."+t.Name),
+			Model: path.Join(project.Name, "seed", "client."+t.Name),
 		}
 	}
 
@@ -86,22 +99,79 @@ func (processor *gqlGenProcessor) processAndWrite(workDir string, projectName st
 	return ioutil.WriteFile(finalPath, data, 0644)
 }
 
-func (processor *gqlGenProcessor) generateCode(workDir string) error {
-	configFilename := path.Join(workDir, seedDir, gqlDir, gqlConfigFile)
-	var cfg *config.Config
-	var err error
-	cfg, err = config.LoadConfig(configFilename)
-	if err != nil {
-		log.Println(err.Error())
+func (processor *gqlGenProcessor) generateCode(project *Project) error {
+	if err := os.Chdir(path.Join(project.AbsoluteWorkDir, seedDir, gqlDir)); err != nil {
 		return err
 	}
 
-	e := json.NewEncoder(os.Stdout)
-	e.SetIndent("", "  ")
-	e.Encode(cfg)
+	data, err := exec.Command("go", "run", "github.com/99designs/gqlgen").Output()
+	if err != nil {
+		log.Println(string(data))
+		return err
+	}
 
-	if err = api.Generate(cfg); err != nil {
-		log.Println(err.Error())
+	return os.Chdir(project.AbsoluteWorkDir)
+}
+
+func (processor *gqlGenProcessor) fixResolver(project *Project) error {
+	filenameRes := path.Join(project.AbsoluteWorkDir, seedDir, gqlDir, resolverTempFilename)
+
+	data, err := ioutil.ReadFile(filenameRes)
+	if err != nil {
+		return err
+	}
+
+	newData, err := implementTheUnimplemented(string(data))
+	if err != nil {
+		return err
+	}
+
+	newData, err = removeGenesisResolver(newData)
+	if err != nil {
+		return err
+	}
+
+	if err = ioutil.WriteFile(filenameRes, []byte(newData), 0644); err != nil {
+		return err
+	}
+
+	newResolverPath := path.Join(project.AbsoluteWorkDir, seedDir, gqlDir, resolverFilename)
+
+	packageImport := path.Join(project.Name, seedDir, "client")
+
+	newResolver := strings.Replace(resolverFile, "{{Package}}", packageImport, 1)
+
+	return ioutil.WriteFile(newResolverPath, []byte(newResolver), 0644)
+}
+
+func (processor *gqlGenProcessor) cleanUnimplemented(project *Project) error {
+	filenameRes := path.Join(project.AbsoluteWorkDir, seedDir, gqlDir, resolverTempFilename)
+
+	data, err := ioutil.ReadFile(filenameRes)
+	if err != nil {
+		return err
+	}
+
+	newData, unresolved, err := getUnimplementedMethods(string(data))
+	if err != nil {
+		return err
+	}
+
+	if err = ioutil.WriteFile(filenameRes, []byte(newData), 0644); err != nil {
+		return err
+	}
+
+	packageImport := path.Join(project.Name, seedDir, "client")
+
+	toImplementFIle := strings.Replace(toImplementFile, "{{Package}}", packageImport, 1)
+
+	for _, r := range unresolved {
+		toImplementFIle += r + "\n"
+	}
+
+	completeToImplementFilename := path.Join(project.AbsoluteWorkDir, seedDir, gqlDir, toImplementFilename)
+
+	if err = ioutil.WriteFile(completeToImplementFilename, []byte(toImplementFIle), 0644); err != nil {
 		return err
 	}
 

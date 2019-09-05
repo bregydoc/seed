@@ -6,7 +6,7 @@ var defaultPrismaProcessor = prismaProcessor{
 		"prisma.graphql",
 	},
 	Generate: []pGenerator{
-		{Generator: "go-client", Output: "./client"},
+		{Generator: "go-client", Output: "../client"},
 	},
 }
 

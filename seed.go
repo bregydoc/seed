@@ -19,10 +19,10 @@ func readSeed(filename string) (string, error) {
 	return string(data), nil
 }
 
-func segment(filename string) ([]GQLType, error) {
+func segment(project *Project) ([]GQLType, error) {
 	types := make([]GQLType, 0)
 
-	seed, err := readSeed(filename)
+	seed, err := readSeed(project.SeedFilename)
 	if err != nil {
 		return nil, err
 	}

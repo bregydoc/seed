@@ -1,13 +1,538 @@
-type User {
-  id: ID! 
-  name: String!
-  posts: [Post!]!
+enum ActionTicketType {
+  COMPLETE_REGISTER
+  RESET_PASSWORD
+  CHANGE_PERSON
 }
 
-type Post {
+type ActionTicket {
   id: ID! 
-  title: String!
-  content: String
-  creator: User!
+  createdAt: String! 
+  updatedAt: String! 
+
+  type: ActionTicketType!
+  token: String! # * a.k.a value
+  available: Boolean!
+  used: Boolean!
+}
+
+type PersonReviews {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  person: Person!
+  title: Text! 
+  description: Text! 
+  approveNumber: Int 
+  declineNumber: Int 
+  comments: [PersonReviews!]!
+}
+
+type Attraction {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  owner: Partner!
+  name: Text! 
+  description: Text 
+  shortDescription: Text 
+
+  faqs: Faq! 
+  principalImage: String
+  coverImage: String
+  landscapeImage: String
+  gallery: [String!]! 
+
+  type: [ExperienceType!]! 
+  place: Place!
+}
+
+type EntryTicket {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  at: String!
+
+  ticket: Ticket!
+
+  partner: Partner! 
+  traveler: Traveler! 
+}
+
+type Error {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  code: String!
+  message: Text!
+  internal: String
+  explain: String
+  location: String
+}
+
+enum ExperienceType {
+  ADVENTURE
+  HISTORY
+  RESTAURANT
+  HOTEL
+  NATURE
+  DISCOUNT
+  MUSEUM
+  GASTRONOMY
+  ART
+  BAR
+  CULTURE
+  SHOPPING
+  ENTERTAINMENT
+  GENERAL
+  SPORT
+}
+
+type Expert {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  person: Person!
+  alias: String! 
+
+  stories: [Story!]!
+}
+
+type FaqEntry {
+  id: ID! 
+
+  faq: Faq!
+  question: Text! 
+  answer: Text! 
+}
+
+type Faq {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  attraction: Attraction!
+
+  entries: [FaqEntry!]!
+}
+
+type LimaContact {
+  id: ID! 
+  message: Text!
+  email: String!
+  phoneNumber: String!
+}
+
+type Lima {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  version: String!
+  available: Boolean!
+
+  mainAttractions: [Attraction!]!
+  mainPlaces: [Place!]!
+  mainPartners: [Partner!]!
+
+  hotStories: [Story!]!
+  contact: LimaContact!
+  faq: Faq!
+}
+
+type Location {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+  longitude: Float!
+  latitude: Float!
+  description: Text
+}
+
+type Feature {
+  id: ID! 
+  name: Text
+  image: String
+}
+
+type OpeningHours {
+  id: ID! 
+  mon: String
+  tue: String
+  wed: String
+  thu: String
+  fri: String
+  sat: String
+  sun: String
+
+  description: Text
+}
+
+type Partner {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  attender: Person! 
+  owner: Person 
+
+  attractions: [Attraction!]!
+  brandName: String!
+  logo: String!
+  socialReason: String!
+  ruc: String!
+  address: String!
+  location: Location!
+  features: [Feature!]!
+  serviceHours: OpeningHours
+
+  registry: [EntryTicket!]! 
+}
+
+enum PassState {
+  ACTIVE
+  INACTIVE
+  FIXED
+  CORRUPTED
+  USING
+}
+
+type Currency {
+  id: ID! 
+  name: Text!
+  code: String! 
+  symbol: String!
+}
+
+type Cost {
+  id: ID! 
+  value: Float!
+  currency: Currency!
+}
+
+type PassType {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+  name: Text! 
+  shortDescription: Text 
+  description: Text 
+  disclaimer: Text 
+  gallery: [String!]! 
+  creatorID: ID!
+  attractions: [Attraction!]!
+  cost: Cost!
+  duration: Int! # In hours
+  children: [Pass!]!
+}
+
+type Pass {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  type: PassType! 
+  owner: Person!
+
+  purchaseReceive: Purchase
+  expireAt: String!
+  state: PassState! 
+  tickets: [Ticket!]!
+}
+
+enum CredentialType {
+  EMAIL
+  PHONE
+  GMAIL
+  FACEBOOK
+  ANONYMOUS
+}
+
+enum IDType {
+  DNI
+  PASSPORT
+}
+
+type PhoneChannel {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  person: Person!
+  isMain: Boolean
+  displayName: String!
+  valid: Boolean! 
+  countryCode: String!
+  number: String
+}
+
+type EmailChannel {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  person: Person!
+  isMain: Boolean
+  displayName: String!
+  valid: Boolean! 
+  value: String!
+  extras: [String!]! 
+}
+
+type Credential {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  displayName: String
+  owner: Person! 
+  isMain: Boolean!
+  type: CredentialType! 
+  validated: Boolean 
+  validationID: ID
+
+  value: String! 
+  rawPassword: String
+  hashedPassword: String!
+}
+
+type IDDocument {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  person: Person! 
+
+  type: IDType!
+  value: String!
+  validated: Boolean 
+}
+
+type Person {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  qmID: String
+  name: String!
+  photo: String
+
+  birthdate: String
+
+  country: Text
+
+  phones: [PhoneChannel!]!
+  emails: [EmailChannel!]!
+  identification: IDDocument! 
+  tags: [String!]! 
+  credentials: [Credential!]! 
+}
+
+type Place {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  name: String!
+  shortName: String
+
+  description: Text! 
+  shortDescription: Text 
+
+  address: String!
+  location: Location!
+
+  googleLink: String
+  website: String
+
+  type: ExperienceType! 
+  extraTypes: [ExperienceType!]! 
+
+  routes: [Route!]! 
+
+  reviews: [PersonReviews!]!
+  tags: [String!]! 
+  likedBy: [Person!]!
+  popularity: Float! 
+
+  ambassadors: [Expert!]!
+
+  providerWeb: String
+  contactPhone: String
+  contactEmail: String
+  addressReference: String
+
+  openingHours: OpeningHours!
+}
+
+enum PaymentMethodType {
+  PAYPAL
+  CULQI
+  UNKNOWN
+  SAVED_CARD
+  CULQI_TOKEN
+  PAYPAL_ORDER
+}
+
+type PaymentMethod {
+  id: ID! 
+  type: PaymentMethodType!
+  value: String
+  cardNumber: String
+  code: String
+}
+
+type ProductEntry {
+  id: ID! 
+  parentID: ID!
+  name: String!
+  description: String
+  quantity: Int!
+  cost: Float!
+  currencyCode: String!
+}
+
+type Purchase {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  chargeToken: String!
+  gatewayResponse: String
+  products: [ProductEntry!]!
+
+  discountID: ID
+  discount: Int
+
+  paymentMethod: PaymentMethod!
+}
+
+type Route {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  name: String!
+  # ! DON'T TOUCH!
+  image: String!
+  type: ExperienceType!
+  extraTypes: [ExperienceType!]! 
+
+  creator: Expert!
+  places: [Place!]! 
+
+  linkedStory: Story 
+
+  likedBy: [Person!]!
+  reviews: [PersonReviews!]!
+
+  popularity: Float! 
+  color: String!
+}
+
+enum StoryType {
+  NEWEST
+  POPULAR
+  TRENDING
+}
+
+type Story {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  author: Expert!
+  type: StoryType!
+  tags: [String!]! 
+
+  podcastLink: String
+  audioStream: String
+  principalImage: String!
+  title: Text! 
+  body: Text! 
+
+  likes: Int!
+  views: Int!
+  reviews: [PersonReviews!]!
+
+  linkedRoute: Route 
+}
+
+type Text {
+  id: ID! 
+  english: String!
+  spanish: String
+  # chinese: String
+}
+
+enum TicketState {
+  AVAILABLE
+  INACTIVE
+  FIXED
+  CORRUPTED
+  USING
+  USED
+}
+
+type Ticket {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  parent: Pass!
+
+  attraction: Attraction!
+
+  description: Text 
+  availableTime: Text 
+
+  maxUses: Int!
+  visited: Boolean!
+  finished: Boolean!
+
+  state: TicketState!
+}
+
+enum CreditCardType {
+  VISA
+  MASTERCARD
+  AMERICAN
+}
+
+type CreditCard {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  owner: Traveler! 
+  customerToken: String!
+  cardNumber: String!
+  cardToken: String!
+  type: CreditCardType! 
+  lastUsed: String
+}
+
+type Traveler {
+  id: ID! 
+  createdAt: String! 
+  updatedAt: String! 
+
+  unregistered: Boolean! 
+  registrationTicket: ActionTicket
+
+  person: Person!
+  username: String! 
+
+  cards: [CreditCard!]! 
+
+  purchases: [Purchase!]!
+
+  passes: [Pass!]!
+
+  registry: [EntryTicket!]! 
 }
 

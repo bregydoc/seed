@@ -1,4 +1,9 @@
 type Query {
-  profile(token: String!): User!
+  hello(who: String!): String!
+  ping(number: Int): String!
+}
+
+type Mutation {
+  createNewUser(email: String, name: String): Traveler!
 }
 

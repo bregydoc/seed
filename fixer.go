@@ -13,7 +13,7 @@ func removeDecorators(in string) string {
 
 // improve this funtion to understand when a DateTime is a name and not a type
 func fixDateTimeToNative(in string) string {
-	return strings.ReplaceAll(in, "DateTime", "Time")
+	return strings.ReplaceAll(in, "DateTime", "String")
 }
 
 func fixGQLTypeDeclarationToGQLGen(t GQLType) (GQLType, error) {

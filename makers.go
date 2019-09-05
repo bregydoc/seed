@@ -6,8 +6,8 @@ import (
 	"path"
 )
 
-func createSeedDir(workDir string) error {
-	full := path.Join(workDir, seedDir)
+func createSeedDir(project *Project) error {
+	full := path.Join(project.AbsoluteWorkDir, seedDir)
 	err := os.Mkdir(full, os.ModePerm)
 	if os.IsExist(err) {
 		return nil
@@ -15,8 +15,8 @@ func createSeedDir(workDir string) error {
 	return err
 }
 
-func createPrismaDir(workDir string) error {
-	full := path.Join(workDir, seedDir, prismaDir)
+func createPrismaDir(project *Project) error {
+	full := path.Join(project.AbsoluteWorkDir, seedDir, prismaDir)
 	err := os.Mkdir(full, os.ModePerm)
 	if os.IsExist(err) {
 		return nil
@@ -24,8 +24,8 @@ func createPrismaDir(workDir string) error {
 	return err
 }
 
-func createGQLDir(workDir string) error {
-	full := path.Join(workDir, seedDir, gqlDir)
+func createGQLDir(project *Project) error {
+	full := path.Join(project.AbsoluteWorkDir, seedDir, gqlDir)
 	err := os.Mkdir(full, os.ModePerm)
 	if os.IsExist(err) {
 		return nil
@@ -33,24 +33,24 @@ func createGQLDir(workDir string) error {
 	return err
 }
 
-func writeToPrisma(workDir string, types []GQLType) error {
+func writeToPrisma(project *Project, types []GQLType) error {
 	reconstructed := ""
 	for _, t := range types {
 		reconstructed += t.Body + "\n"
 	}
 
-	p := path.Join(workDir, seedDir, prismaDir, prismaFile)
+	p := path.Join(project.AbsoluteWorkDir, seedDir, prismaDir, prismaFile)
 
 	return ioutil.WriteFile(p, []byte(reconstructed), 0644)
 }
 
-func writeToGQLGen(workDir string, types []GQLType) error {
+func writeToGQLGen(project *Project, types []GQLType) error {
 	reconstructed := ""
 	for _, t := range types {
 		reconstructed += t.Body + "\n"
 	}
 
-	g := path.Join(workDir, seedDir, gqlDir, gqlGenFile)
+	g := path.Join(project.AbsoluteWorkDir, seedDir, gqlDir, gqlGenFile)
 
 	return ioutil.WriteFile(g, []byte(reconstructed), 0644)
 }

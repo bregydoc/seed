@@ -1,16 +1,546 @@
-type User {
-  id: ID! @id
-  name: String!
-  posts: [Post!]!
+enum ActionTicketType {
+  COMPLETE_REGISTER
+  RESET_PASSWORD
+  CHANGE_PERSON
 }
 
-type Post {
+type ActionTicket {
   id: ID! @id
-  title: String!
-  content: String
-  creator: User!
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  type: ActionTicketType!
+  token: String! # * a.k.a value
+  available: Boolean!
+  used: Boolean!
+}
+
+type PersonReviews {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  person: Person!
+  title: Text! @relation(name: "TitleReview")
+  description: Text! @relation(name: "DescriptionReview")
+  approveNumber: Int @default(value: 1)
+  declineNumber: Int @default(value: 0)
+  comments: [PersonReviews!]!
+}
+
+type Attraction {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  owner: Partner!
+  name: Text! @relation(name: "Name")
+  description: Text @relation(name: "DescriptionAttraction")
+  shortDescription: Text @relation(name: "ShortDescriptionAttraction")
+
+  faqs: Faq! @relation(link: INLINE)
+  principalImage: String
+  coverImage: String
+  landscapeImage: String
+  gallery: [String!]! @scalarList(strategy: RELATION)
+
+  type: [ExperienceType!]! @scalarList(strategy: RELATION)
+  place: Place!
+}
+
+type EntryTicket {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  at: DateTime!
+
+  ticket: Ticket!
+
+  partner: Partner! @relation(name: "EntriesPartner")
+  traveler: Traveler! @relation(name: "EntriesTraveler")
+}
+
+type Error {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  code: String!
+  message: Text!
+  internal: String
+  explain: String
+  location: String
+}
+
+enum ExperienceType {
+  ADVENTURE
+  HISTORY
+  RESTAURANT
+  HOTEL
+  NATURE
+  DISCOUNT
+  MUSEUM
+  GASTRONOMY
+  ART
+  BAR
+  CULTURE
+  SHOPPING
+  ENTERTAINMENT
+  GENERAL
+  SPORT
+}
+
+type Expert {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  person: Person!
+  alias: String! @unique
+
+  stories: [Story!]!
+}
+
+type FaqEntry {
+  id: ID! @id
+
+  faq: Faq!
+  question: Text! @relation(name: "Question")
+  answer: Text! @relation(name: "Answer")
+}
+
+type Faq {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  attraction: Attraction!
+
+  entries: [FaqEntry!]!
+}
+
+type LimaContact {
+  id: ID! @id
+  message: Text!
+  email: String!
+  phoneNumber: String!
+}
+
+type Lima {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  version: String!
+  available: Boolean!
+
+  mainAttractions: [Attraction!]!
+  mainPlaces: [Place!]!
+  mainPartners: [Partner!]!
+
+  hotStories: [Story!]!
+  contact: LimaContact!
+  faq: Faq!
+}
+
+type Location {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+  longitude: Float!
+  latitude: Float!
+  description: Text
+}
+
+type Feature {
+  id: ID! @id
+  name: Text
+  image: String
+}
+
+type OpeningHours {
+  id: ID! @id
+  mon: String
+  tue: String
+  wed: String
+  thu: String
+  fri: String
+  sat: String
+  sun: String
+
+  description: Text
+}
+
+type Partner {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  attender: Person! @relation(name: "AttendersByPartners")
+  owner: Person @relation(name: "OwnersByPartners")
+
+  attractions: [Attraction!]!
+  brandName: String!
+  logo: String!
+  socialReason: String!
+  ruc: String!
+  address: String!
+  location: Location!
+  features: [Feature!]!
+  serviceHours: OpeningHours
+
+  registry: [EntryTicket!]! @relation(name: "EntriesPartner")
+}
+
+enum PassState {
+  ACTIVE
+  INACTIVE
+  FIXED
+  CORRUPTED
+  USING
+}
+
+type Currency {
+  id: ID! @id
+  name: Text!
+  code: String! @default(value: "")
+  symbol: String!
+}
+
+type Cost {
+  id: ID! @id
+  value: Float!
+  currency: Currency!
+}
+
+type PassType {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+  name: Text! @relation(name: "PassTypeName")
+  shortDescription: Text @relation(name: "PassTypeShortDescription")
+  description: Text @relation(name: "PassTypeDescription")
+  disclaimer: Text @relation(name: "PassTypeDisclaimer")
+  gallery: [String!]! @scalarList(strategy: RELATION)
+  creatorID: ID!
+  attractions: [Attraction!]!
+  cost: Cost!
+  duration: Int! # In hours
+  children: [Pass!]!
+}
+
+type Pass {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  type: PassType! @relation(link: INLINE)
+  owner: Person!
+
+  purchaseReceive: Purchase
+  expireAt: DateTime!
+  state: PassState! @default(value: ACTIVE)
+  tickets: [Ticket!]!
+}
+
+enum CredentialType {
+  EMAIL
+  PHONE
+  GMAIL
+  FACEBOOK
+  ANONYMOUS
+}
+
+enum IDType {
+  DNI
+  PASSPORT
+}
+
+type PhoneChannel {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  person: Person!
+  isMain: Boolean
+  displayName: String!
+  valid: Boolean! @default(value: false)
+  countryCode: String!
+  number: String
+}
+
+type EmailChannel {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  person: Person!
+  isMain: Boolean
+  displayName: String!
+  valid: Boolean! @default(value: false)
+  value: String!
+  extras: [String!]! @scalarList(strategy: RELATION)
+}
+
+type Credential {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  displayName: String
+  owner: Person! @relation(name: "OwnerCredentials")
+  isMain: Boolean!
+  type: CredentialType! @default(value: EMAIL)
+  validated: Boolean @default(value: false)
+  validationID: ID
+
+  value: String! @unique
+  rawPassword: String
+  hashedPassword: String!
+}
+
+type IDDocument {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  person: Person! @relation(name: "PersonID", link: TABLE)
+
+  type: IDType!
+  value: String!
+  validated: Boolean @default(value: false)
+}
+
+type Person {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  qmID: String
+  name: String!
+  photo: String
+
+  birthdate: DateTime
+
+  country: Text
+
+  phones: [PhoneChannel!]!
+  emails: [EmailChannel!]!
+  identification: IDDocument! @relation(name: "PersonID", onDelete: CASCADE)
+  tags: [String!]! @scalarList(strategy: RELATION)
+  credentials: [Credential!]! @relation(name: "OwnerCredentials")
+}
+
+type Place {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  name: String!
+  shortName: String
+
+  description: Text! @relation(name: "DescriptionPlace")
+  shortDescription: Text @relation(name: "ShortDescriptionPlace")
+
+  address: String!
+  location: Location!
+
+  googleLink: String
+  website: String
+
+  type: ExperienceType! @default(value: GENERAL)
+  extraTypes: [ExperienceType!]! @scalarList(strategy: RELATION)
+
+  routes: [Route!]! @relation(name: "PlaceInRoutes")
+
+  reviews: [PersonReviews!]!
+  tags: [String!]! @scalarList(strategy: RELATION)
+  likedBy: [Person!]!
+  popularity: Float! @default(value: 0)
+
+  ambassadors: [Expert!]!
+
+  providerWeb: String
+  contactPhone: String
+  contactEmail: String
+  addressReference: String
+
+  openingHours: OpeningHours!
+}
+
+enum PaymentMethodType {
+  PAYPAL
+  CULQI
+  UNKNOWN
+  SAVED_CARD
+  CULQI_TOKEN
+  PAYPAL_ORDER
+}
+
+type PaymentMethod {
+  id: ID! @id
+  type: PaymentMethodType!
+  value: String
+  cardNumber: String
+  code: String
+}
+
+type ProductEntry {
+  id: ID! @id
+  parentID: ID!
+  name: String!
+  description: String
+  quantity: Int!
+  cost: Float!
+  currencyCode: String!
+}
+
+type Purchase {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  chargeToken: String!
+  gatewayResponse: String
+  products: [ProductEntry!]!
+
+  discountID: ID
+  discount: Int
+
+  paymentMethod: PaymentMethod!
+}
+
+type Route {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  name: String!
+  # ! DON'T TOUCH!
+  image: String!
+  type: ExperienceType!
+  extraTypes: [ExperienceType!]! @scalarList(strategy: RELATION)
+
+  creator: Expert!
+  places: [Place!]! @relation(name: "PlaceInRoutes")
+
+  linkedStory: Story @relation(name: "RouteStoryLink", link: TABLE)
+
+  likedBy: [Person!]!
+  reviews: [PersonReviews!]!
+
+  popularity: Float! @default(value: 0)
+  color: String!
+}
+
+enum StoryType {
+  NEWEST
+  POPULAR
+  TRENDING
+}
+
+type Story {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  author: Expert!
+  type: StoryType!
+  tags: [String!]! @scalarList(strategy: RELATION)
+
+  podcastLink: String
+  audioStream: String
+  principalImage: String!
+  title: Text! @relation(name: "TitleStory")
+  body: Text! @relation(name: "BodyStory")
+
+  likes: Int!
+  views: Int!
+  reviews: [PersonReviews!]!
+
+  linkedRoute: Route @relation(name: "RouteStoryLink")
+}
+
+type Text {
+  id: ID! @id
+  english: String!
+  spanish: String
+  # chinese: String
+}
+
+enum TicketState {
+  AVAILABLE
+  INACTIVE
+  FIXED
+  CORRUPTED
+  USING
+  USED
+}
+
+type Ticket {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  parent: Pass!
+
+  attraction: Attraction!
+
+  description: Text @relation(name: "Description")
+  availableTime: Text @relation(name: "AvailableTime")
+
+  maxUses: Int!
+  visited: Boolean!
+  finished: Boolean!
+
+  state: TicketState!
+}
+
+enum CreditCardType {
+  VISA
+  MASTERCARD
+  AMERICAN
+}
+
+type CreditCard {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  owner: Traveler! @relation(name: "CreditCards")
+  customerToken: String!
+  cardNumber: String!
+  cardToken: String!
+  type: CreditCardType! @default(value: VISA)
+  lastUsed: DateTime
+}
+
+type Traveler {
+  id: ID! @id
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime! @updatedAt
+
+  unregistered: Boolean! @default(value: false)
+  registrationTicket: ActionTicket
+
+  person: Person!
+  username: String! @default(value: "")
+
+  cards: [CreditCard!]! @relation(name: "CreditCards")
+
+  purchases: [Purchase!]!
+
+  passes: [Pass!]!
+
+  registry: [EntryTicket!]! @relation(name: "EntriesTraveler")
 }
 
 type Query {
-  profile(token: String!): User!
+  hello(who: String!): String!
+  ping(number: Int): String!
+}
+
+type Mutation {
+  createNewUser(email: String, name: String): Traveler!
 }
